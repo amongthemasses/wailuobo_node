@@ -5,10 +5,12 @@ module.exports = {
     static: path.join(__dirname, "./public"),
     responseCode: {
         success: 200,
+        missingFile: 300,
         error: 400,
         missingParameter: 401,
         invalidAccessToken: 402,
-        invalidRefreshToken: 403
+        invalidRefreshToken: 403,
+
     },
     cors: {
         origin: "*",
@@ -19,11 +21,11 @@ module.exports = {
         password: "123456",
         host: "127.0.0.1",
         port: "3306",
-        database: "local"
+        database: "wailuobo"
     },
     auth: {
         secretKey: "abc123",
-        refreshExpiresIn: "30d", 
+        refreshExpiresIn: "30d",
         accessExpiresIn: "15m"
     }
 }

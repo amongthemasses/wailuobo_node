@@ -25,7 +25,7 @@ app.use(KoaStatic(Config.static));
 app.use(Bodyparser());
 
 // -- 中间件 --
-app.use(AuthMiddleware.middleware);
+// app.use(AuthMiddleware.middleware);
 // app.use((ctx,next)=>{});
 
 // -- 路由 --

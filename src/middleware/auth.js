@@ -2,6 +2,7 @@ const App = require("koa");
 const Jwt = require("jsonwebtoken");
 const ResponseCode = require("../../config").responseCode;
 const AuthConfig = require("../../config").auth;
+
 const notTokenModule = ["user"];
 
 class authMiddleware {
@@ -27,7 +28,7 @@ class authMiddleware {
                 } catch (error) {
                     return ctx.body = { code: ResponseCode.invalidAccessToken, message: "客户端 token 过期" };
                 }
-                if (tokenValue.type == "access") {
+                if (tokenValue.type === "access") {
                     await next();
                 } else {
                     return ctx.body = { code: ResponseCode.error, message: "客户端携带 token 没有访问权限" };
