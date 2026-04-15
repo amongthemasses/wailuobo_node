@@ -11,7 +11,7 @@ module.exports = class HelloController {
         let query = "select * from infos where id = ?";
         let value = [1];
         try {
-            ctx.body = await mysqlConn.sqlQeury(query, value);
+            ctx.body = await mysqlConn.sqlQuery(query, value);
         } catch (error) {
             ctx.body = error;
         }

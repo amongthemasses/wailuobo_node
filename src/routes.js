@@ -1,37 +1,27 @@
 const Router = require("koa-router");
-const multer = require("multer");
 const router = new Router();
-const UserBaseController = require("./controller/user_base_controller");
 
+const UserBaseController = require("./controller/user_base_controller");
+const SkillsTypeController = require("./controller/skills_type_controller");
+const SkillsController = require("./controller/skills_controller");
 
 // 1. 创建上传目录（不存在自动创建）
-const uploadDir = path.join(__dirname, '../public/uploads')
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir)
-}
 
-// 2. 配置 multer 存储
-const storage = multer.diskStorage({
-    // 上传目录
-    destination: (req, file, cb) => {
-        cb(null, uploadDir)
-    },
-    // 文件名：时间戳 + 原始后缀（防止重名覆盖）
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname)
-        const filename = Date.now() + ext
-        cb(null, filename)
-    }
-})
-
-// 3. 初始化上传（限制文件大小 5MB）
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }
-})
 
 router.get("/get-base-message", UserBaseController.getMessage);
 router.post("/create-base-message", UserBaseController.createBase);
-router.post("/upload-image", upload.single('image'), UserBaseController.uploadImage);
+router.post("/update-base-message", UserBaseController.updateBase);
+router.post("/upload-image", UserBaseController.uploadImage);
+
+// -- skills type --
+router.get("/get-skills-type", SkillsTypeController.getSKillsType);
+
+// -- skills --
+router.get("/get-skills", SkillsController.getSKills);
+router.get("/add-skills", SkillsController.addSKills);
+router.get("/update-skills", SkillsController.updateSKills);
+router.get("/delete-skills", SkillsController.deleteSKills);
+
+// -- project --
 
 module.exports = router;
