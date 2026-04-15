@@ -5,8 +5,8 @@ const ResponseCode = require("../../config").responseCode;
 class SkillsController {
 
     /**
-     * 
-     * @param {App.ParameterizedContext} ctx 
+     *
+     * @param {App.ParameterizedContext} ctx
      */
     async getSKills(ctx) {
         let { phoneNumber } = ctx.request.query || {};

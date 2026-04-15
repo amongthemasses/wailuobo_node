@@ -154,7 +154,7 @@ class UserBaseController {
                 FROM user_base
                 WHERE phone_number = '${phoneNumber}'
                   AND set_code = '${setCode}'
-            `
+            `;
             let dataList = await MysqlConn.connQuery(conn, dListQuery);
             if (dataList[0].img_url !== "/uploads/defalut_user.png") {
                 fs.unlink(path.join(staticDir, dataList[0].img_url), (error) => {
