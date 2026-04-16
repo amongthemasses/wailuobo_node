@@ -2,24 +2,24 @@ const App = require("koa");
 const MysqlConn = require("../mysql_conn");
 const ResponseCode = require("../../config").responseCode;
 
-class ProjectTipsController {
+class CompanyTextController {
     /**
      *
      * @param {App.ParameterizedContext} ctx
      * @returns {Promise<{code: number, message: string}|{code: number, message: string}|{code: number, message: *, error: *}|{code: number, data: {insertId: *}, message: string}>}
      */
-    async addProjectTips(ctx) {
-        let {projectId, tip} = ctx.request.body || {};
-        if (!projectId) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'projectId'"};
+    async addCompanyText(ctx) {
+        let {companyId, text} = ctx.request.body || {};
+        if (!companyId) {
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'companyId'"};
         }
-        if (!tip) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'tip'"};
+        if (!text) {
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'text'"};
         }
         try {
             let query = `
-                INSERT INTO project_tips(project_id, tip)
-                VALUES ${projectId}, '${tip}'
+                INSERT INTO company_text(company_id, text)
+                VALUES (${companyId}, '${text}')
             `;
             let result = await MysqlConn.sqlQuery(query);
             return ctx.body = {code: ResponseCode.success, data: {insertId: result.insertId}, message: "添加成功！"};
@@ -33,14 +33,14 @@ class ProjectTipsController {
      * @param {App.ParameterizedContext} ctx
      * @returns {Promise<{code: number, message: string}>}
      */
-    async deleteProjectTips(ctx) {
+    async deleteCompanyText(ctx) {
         let {id} = ctx.request.body || {};
         if (!id) {
             return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
         }
         let query = `
             DELETE
-            FROM project_tips
+            FROM company_text
             WHERE id = ${id}
         `;
         try {
@@ -52,4 +52,4 @@ class ProjectTipsController {
     }
 }
 
-module.exports = new ProjectTipsController();
+module.exports = new CompanyTextController();

@@ -8,6 +8,7 @@ const fs = require("fs");
 const router = require("./src/routes")
 const Config = require("./config");
 // const AuthMiddleware = require("./src/middleware/auth");
+const AipAuthMiddleware = require("./src/middleware/aip_auth");
 
 const app = new Koa();
 
@@ -16,18 +17,16 @@ app.use(Cors({
     origin: (ctx) => {
         // return Config.cors.origin;
         return ctx.get("Origin") || Config.cors.origin;
-    },
-    credentials: Config.cors.credentials
+    }, credentials: Config.cors.credentials
 }));
 
 // -- body 解析 --
 const dir = Config.uploadsDir;
-!fs.existsSync(dir) && fs.mkdirSync(dir, { recursive: true });
+!fs.existsSync(dir) && fs.mkdirSync(dir, {recursive: true});
 app.use(KoaBody({
     multipart: true, // 允许上传文件
     formidable: {
-        uploadDir: dir,
-        keepExtensions: true, // 保留文件后缀
+        uploadDir: dir, keepExtensions: true, // 保留文件后缀
         maxFileSize: 10 * 1024 * 1024, // 最大 10MB
         onFileBegin: (name, file) => {
             const ext = path.extname(file.originalFilename);
@@ -40,6 +39,7 @@ app.use(KoaBody({
 // -- 中间件 --
 // app.use(AuthMiddleware.middleware);
 // app.use((ctx,next)=>{});
+app.use(AipAuthMiddleware.middleware);
 
 // -- 路由 --
 app.use(router.routes(), router.allowedMethods({}));

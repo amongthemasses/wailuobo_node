@@ -1,0 +1,44 @@
+const {ResponseCode} = require("../../config");
+const MysqlConn = require("../mysql_conn");
+
+//  模块验证白名单
+const ModuleWhiteMenu = ["show"];
+
+class AipAuthMiddleware {
+    /**
+     *
+     * @param {App.ParameterizedContext} ctx
+     * @param {App.Next} next
+     */
+    static async middleware(ctx, next) {
+        // 检查是否需要验证
+        let UrlNotSetCode = ModuleWhiteMenu.some((val) => {
+            return String(ctx.request.originalUrl).search(val) !== -1;
+        });
+        if (UrlNotSetCode) { // 不需要验证
+            await next();
+        } else { // 需要验证
+            let setCode = ctx.request.header.setcode;
+            let phoneNumber = ctx.request.header.phonenumber;
+            // 有时间这里 加redis缓存， 优化mysql访问量
+            if (phoneNumber && setCode) {
+                let query = `
+                    SELECT COUNT(id) AS id
+                    FROM user_base
+                    WHERE phone_number = ${phoneNumber}
+                      AND set_code = ${setCode}
+                `;
+                let result = await MysqlConn.sqlQuery(query);
+                if (result.length > 0) {
+                    await next()
+                } else {
+                    return ctx.body = {code: ResponseCode.error, message: "嘿 bro！ 你的信息验证不通过！请规范使用"};
+                }
+            } else {
+                return ctx.body = {code: ResponseCode.error, message: "客户端没有访问权限"};
+            }
+        }
+    }
+}
+
+module.exports = AipAuthMiddleware;

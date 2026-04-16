@@ -215,6 +215,7 @@ class ProjectController {
             await MysqlConn.connQuery(conn, query);
             await MysqlConn.connQuery(conn, tipQuery);
             await MysqlConn.connQuery(conn, textQuery);
+            conn.commit();
             return ctx.body = {code: ResponseCode.success, data: {}, message: "删除成功！"};
         } catch (error) {
             await conn.rollback();
