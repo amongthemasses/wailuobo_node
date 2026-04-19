@@ -10,12 +10,10 @@ module.exports = {
         error: 400,
         missingParameter: 401,
         invalidAccessToken: 402,
-        invalidRefreshToken: 403,
-
+        invalidRefreshToken: 403
     },
     cors: {
-        origin: "*",
-        credentials: true
+        origin: "*", credentials: true
     },
     mysql: {
         user: "wailuobo",
@@ -25,11 +23,10 @@ module.exports = {
         database: "wailuobo",
         connectionLimit: 10,
         supportBigNumbers: true,
-        bigNumberStrings: true
+        bigNumberStrings: true,
+        timezone: 'Z'
     },
     auth: {
-        secretKey: "abc123",
-        refreshExpiresIn: "30d",
-        accessExpiresIn: "15m"
+        secretKey: "abc123", refreshExpiresIn: "30d", accessExpiresIn: "15m"
     }
 }

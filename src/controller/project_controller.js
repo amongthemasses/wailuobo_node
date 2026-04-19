@@ -21,12 +21,14 @@ class ProjectController {
         }
         let query = `
             SELECT a.*,
-                   GROUP_CONCAT(bt.id, '|,|', bt.tip SEPARATOR '|.|')  AS tips,
-                   GROUP_CONCAT(ct.id, '|,|', ct.text SEPARATOR '|.|') AS texts,
+                   (SELECT GROUP_CONCAT(bt.id, '|,|', bt.tip SEPARATOR '|.|')
+                    FROM project_tips AS bt
+                    WHERE a.id = bt.project_id) AS tips,
+                   (SELECT GROUP_CONCAT(ct.id, '|,|', ct.text SEPARATOR '|.|')
+                    FROM project_text AS ct
+                    WHERE a.id = ct.project_id) AS texts
             FROM project AS a
-                     LEFT JOIN project_tips AS bt ON a.id = bt.project_id
-                     LEFT JOIN project_text AS ct ON a.id = ct.project_id
-            WHERE phone_number = '${phoneNumber}'
+            WHERE a.phone_number = '${phoneNumber}'
         `;
         try {
             let proList = await MysqlConn.sqlQuery(query);
@@ -52,7 +54,7 @@ class ProjectController {
                 }
                 return it;
             });
-            return ctx.body = {code: ResponseCode.success, data: reList, message: ""};
+            return ctx.body = {code: ResponseCode.success, data: reList, message: "获取成功！"};
         } catch (error) {
             return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
@@ -86,21 +88,23 @@ class ProjectController {
         if (!tips || tips.length === 0) {
             return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'tips'"};
         }
-        let [uploadsDir, filename] = imgUrl.trim().split("/");
-        let conn = MysqlConn.getConn();
+        let [sp, uploadsDir, filename] = imgUrl.trim().split("/");
+        let conn = await MysqlConn.getConn();
         try {
-            fs.renameSync(path.join(staticDir, imgUrl), path.join(staticDir, `/images/${filename}`));
-            let query = `
-                INSERT INTO project (base_id, phone_number, name, description, img_url, create_date, updte_date)
-                VALUES (${baseId}, '${phoneNumber}', '${name}', '${description}', '${imgUrl}', NOW(), NOW())
-            `;
             await conn.beginTransaction();
-
+            if (filename) {
+                fs.cpSync(path.join(staticDir, imgUrl), path.join(staticDir, `/images/${filename}`));
+            }
+            let query = `
+                INSERT INTO project (base_id, phone_number, name, description, img_url, create_date, update_date)
+                VALUES (${baseId}, '${phoneNumber}', '${name}', '${description}', '/images/${filename}', NOW(),
+                        NOW())
+            `;
             let result = await MysqlConn.connQuery(conn, query);
             let project_id = result.insertId;
 
             let textVal = texts.map((it, i) => {
-                return `(${project_id},${it})`;
+                return `(${project_id},'${it}')`;
             })
             let textQuery = `
                 INSERT INTO project_text (project_id, text)
@@ -108,10 +112,10 @@ class ProjectController {
             `;
 
             let tipVal = tips.map((it, i) => {
-                return `(${project_id},${it})`;
+                return `(${project_id},'${it}')`;
             })
             let tipQuery = `
-                INSERT INTO project_tip (project_id, tip)
+                INSERT INTO project_tips (project_id, tip)
                 VALUES ${tipVal.join(",")}
             `;
 
@@ -121,7 +125,7 @@ class ProjectController {
             conn.commit();
             return ctx.body = {code: ResponseCode.success, data: {}, message: "添加成功！"};
         } catch (error) {
-            await conn.rollback();
+            // await conn.rollback();
             return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
@@ -152,6 +156,9 @@ class ProjectController {
      */
     async updateProject(ctx) {
         let {id, baseId, phoneNumber, name, description, imgUrl} = ctx.request.body || {};
+        if (!id || (typeof id != "number")) {
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
+        }
         if (!baseId || (typeof baseId != "number")) {
             return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'baseId'"};
         }
@@ -167,19 +174,56 @@ class ProjectController {
         if (!imgUrl || (typeof imgUrl != "string")) {
             return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'imgUrl'"};
         }
-        let query = `
-            UPDATE project
-            SET base_id      = ${baseId},
-                phone_number = ${phoneNumber},
-                description  = ${description},
-                img_url      = ${imgUrl};
-            WHERE id =
-            ${id};
-        `;
+        let conn = await MysqlConn.getConn()
         try {
-            let result = await MysqlConn.sqlQuery(query);
+            await conn.beginTransaction();
+            let query = ``;
+            let [resCount] = await MysqlConn.connQuery(conn, `
+                SELECT COUNT(id) AS counts
+                FROM project
+                WHERE img_url = '${imgUrl}'
+                  AND id = ${id}
+            `);
+            let rDF = {img_url: ""};
+            if (resCount.counts > 0) {
+                query = `
+                    UPDATE project
+                    SET base_id      = ${baseId},
+                        phone_number = '${phoneNumber}',
+                        name         = '${name}',
+                        description  = '${description}',
+                        update_date  = NOW()
+                    WHERE id = ${id}
+                `;
+                rDF.img_url = ""
+            } else {
+                let [sp, uploads, filename] = imgUrl.trim().split("/");
+                fs.cpSync(path.join(staticDir, imgUrl), path.join(staticDir, `/images/${filename}`));
+                query = `
+                    UPDATE project
+                    SET base_id      = ${baseId},
+                        phone_number = '${phoneNumber}',
+                        name         = '${name}',
+                        description  = '${description}',
+                        img_url      = '/images/${filename}',
+                        update_date  = NOW()
+                    WHERE id = ${id}
+                `;
+                [rDF] = await MysqlConn.connQuery(conn, `
+                    SELECT img_url
+                    FROM project
+                    WHERE id = ${id}
+                `);
+            }
+
+            let result = await MysqlConn.connQuery(conn, query);
+            if (rDF.img_url) { // 存入数据库后删除旧文件
+                fs.unlinkSync(path.join(staticDir, rDF.img_url));
+            }
+            conn.commit();
             return ctx.body = {code: ResponseCode.success, data: {}, message: "修改成功！"};
         } catch (error) {
+            await conn.rollback();
             return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
@@ -201,20 +245,28 @@ class ProjectController {
         `;
         let tipQuery = `
             DELETE
-            FROM project_tip
-            WHERE project_id = (${id})
+            FROM project_tips
+            WHERE project_id = ${id}
         `;
         let textQuery = `
             DELETE
             FROM project_text
-            WHERE project_id = (${id})
+            WHERE project_id = ${id}
         `;
         let conn = await MysqlConn.getConn();
         try {
             await conn.beginTransaction();
+            let rfd = await MysqlConn.connQuery(conn, `
+                SELECT img_url
+                FROM project
+                WHERE id = ${id}
+            `);
             await MysqlConn.connQuery(conn, query);
             await MysqlConn.connQuery(conn, tipQuery);
             await MysqlConn.connQuery(conn, textQuery);
+            if (rfd.length > 0) {
+                fs.unlinkSync(path.join(staticDir, rfd[0].img_url));
+            }
             conn.commit();
             return ctx.body = {code: ResponseCode.success, data: {}, message: "删除成功！"};
         } catch (error) {

@@ -60,4 +60,5 @@ router.post("/setting/delete-company-text", CompanyTextController.deleteCompanyT
 // -- company main --
 router.post("/setting/add-company-main", CompanyMainController.addCompanyMain);
 router.post("/setting/delete-company-main", CompanyMainController.deleteCompanyMainText);
+
 module.exports = router;

@@ -1,8 +1,8 @@
-const {ResponseCode} = require("../../config");
+const ResponseCode = require("../../config").responseCode;
 const MysqlConn = require("../mysql_conn");
 
 //  模块验证白名单
-const ModuleWhiteMenu = ["show"];
+const ModuleWhiteMenu = ["show","uploads","images"];
 
 class AipAuthMiddleware {
     /**
@@ -18,15 +18,15 @@ class AipAuthMiddleware {
         if (UrlNotSetCode) { // 不需要验证
             await next();
         } else { // 需要验证
-            let setCode = ctx.request.header.setcode;
-            let phoneNumber = ctx.request.header.phonenumber;
+            let {setcode, phonenumber} = ctx.request.header || {};
+            let props = (setcode !== undefined && phonenumber !== undefined);
             // 有时间这里 加redis缓存， 优化mysql访问量
-            if (phoneNumber && setCode) {
+            if (props) {
                 let query = `
                     SELECT COUNT(id) AS id
                     FROM user_base
-                    WHERE phone_number = ${phoneNumber}
-                      AND set_code = ${setCode}
+                    WHERE phone_number = ${phonenumber}
+                      AND set_code = ${setcode}
                 `;
                 let result = await MysqlConn.sqlQuery(query);
                 if (result.length > 0) {

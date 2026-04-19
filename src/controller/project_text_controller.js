@@ -19,7 +19,7 @@ class ProjectTextController {
         try {
             let query = `
                 INSERT INTO project_text(project_id, text)
-                VALUES ${projectId},'${text}'
+                VALUES (${projectId},'${text}')
             `;
             let result = await MysqlConn.sqlQuery(query);
             return ctx.body = {code: ResponseCode.success, data: {insertId: result.insertId}, message: "添加成功！"};

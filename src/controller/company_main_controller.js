@@ -9,12 +9,18 @@ class CompanyMainController {
      * @returns {Promise<{code: number, message: string}|{code: number, message: string}|{code: number, message: *, error: *}|{code: number, data: {insertId: *}, message: string}>}
      */
     async addCompanyMain(ctx) {
-        let {companyId, mainText} = ctx.request.body || {};
+        let { companyId, mainText } = ctx.request.body || {};
         if (!companyId) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'companyId'"};
+            return (ctx.body = {
+                code: ResponseCode.missingParameter,
+                message: "missing parameter 'companyId'",
+            });
         }
         if (!mainText) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'mainText'"};
+            return (ctx.body = {
+                code: ResponseCode.missingParameter,
+                message: "missing parameter 'mainText'",
+            });
         }
         try {
             let query = `
@@ -22,9 +28,17 @@ class CompanyMainController {
                 VALUES (${companyId}, '${mainText}')
             `;
             let result = await MysqlConn.sqlQuery(query);
-            return ctx.body = {code: ResponseCode.success, data: {insertId: result.insertId}, message: "添加成功！"};
+            return (ctx.body = {
+                code: ResponseCode.success,
+                data: { insertId: result.insertId },
+                message: "添加成功！",
+            });
         } catch (error) {
-            return ctx.body = {code: ResponseCode.error, message: error.message, error};
+            return (ctx.body = {
+                code: ResponseCode.error,
+                message: error.message,
+                error,
+            });
         }
     }
 
@@ -34,9 +48,12 @@ class CompanyMainController {
      * @returns {Promise<{code: number, message: string}>}
      */
     async deleteCompanyMainText(ctx) {
-        let {id} = ctx.request.body || {};
+        let { id } = ctx.request.body || {};
         if (!id) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
+            return (ctx.body = {
+                code: ResponseCode.missingParameter,
+                message: "missing parameter 'id'",
+            });
         }
         let query = `
             DELETE
@@ -45,9 +62,13 @@ class CompanyMainController {
         `;
         try {
             await MysqlConn.sqlQuery(query);
-            return ctx.body = {code: ResponseCode.success, message: "删除成功！"};
+            return (ctx.body = { code: ResponseCode.success, message: "删除成功！" });
         } catch (error) {
-            return ctx.body = {code: ResponseCode.error, message: error.message, error};
+            return (ctx.body = {
+                code: ResponseCode.error,
+                message: error.message,
+                error,
+            });
         }
     }
 }
