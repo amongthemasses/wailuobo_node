@@ -3,7 +3,7 @@ const MysqlConfig = require("../config").mysql;
 
 class MysqlConnection {
     constructor() {
-        this.pool = mysql.createPool({...MysqlConfig});
+        this.pool = mysql.createPool({ ...MysqlConfig });
     }
 
     /**
@@ -11,7 +11,6 @@ class MysqlConnection {
      * @returns {mysql.PoolConnection}
      */
     async getConn() {
-
         try {
             return await this.pool.getConnection();
         } catch (error) {
@@ -25,7 +24,7 @@ class MysqlConnection {
      * @param {mysql.PoolConnection} conn
      * @param {String} queryString
      * @param {Array<String>} queryParams
-     * @returns
+     * @returns {Array<Object>}
      */
     async connQuery(conn, queryString, queryParams = []) {
         try {
@@ -46,7 +45,7 @@ class MysqlConnection {
             return result;
         } catch (error) {
             conn.release();
-            return error;
+            throw error
         }
     }
 }

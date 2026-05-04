@@ -9,12 +9,12 @@ class ProjectTipsController {
      * @returns {Promise<{code: number, message: string}|{code: number, message: string}|{code: number, message: *, error: *}|{code: number, data: {insertId: *}, message: string}>}
      */
     async addProjectTips(ctx) {
-        let {projectId, tip} = ctx.request.body || {};
+        let { projectId, tip } = ctx.request.body || {};
         if (!projectId) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'projectId'"};
+            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'projectId'" };
         }
         if (!tip) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'tip'"};
+            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'tip'" };
         }
         try {
             let query = `
@@ -22,9 +22,9 @@ class ProjectTipsController {
                 VALUES (${projectId}, '${tip}')
             `;
             let result = await MysqlConn.sqlQuery(query);
-            return ctx.body = {code: ResponseCode.success, data: {insertId: result.insertId}, message: "添加成功！"};
+            return ctx.body = { code: ResponseCode.success, data: { insertId: result.insertId }, message: "添加成功！" };
         } catch (error) {
-            return ctx.body = {code: ResponseCode.error, message: error.message, error};
+            return ctx.body = { code: ResponseCode.error, message: error.message, error };
         }
     }
 
@@ -34,9 +34,9 @@ class ProjectTipsController {
      * @returns {Promise<{code: number, message: string}>}
      */
     async deleteProjectTips(ctx) {
-        let {id} = ctx.request.body || {};
+        let { id } = ctx.request.body || {};
         if (!id) {
-            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
+            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'id'" };
         }
         let query = `
             DELETE
@@ -45,9 +45,9 @@ class ProjectTipsController {
         `;
         try {
             await MysqlConn.sqlQuery(query);
-            return ctx.body = {code: ResponseCode.success, message: "删除成功！"};
+            return ctx.body = { code: ResponseCode.success, message: "删除成功！" };
         } catch (error) {
-            return ctx.body = {code: ResponseCode.error, message: error.message, error};
+            return ctx.body = { code: ResponseCode.error, message: error.message, error };
         }
     }
 }

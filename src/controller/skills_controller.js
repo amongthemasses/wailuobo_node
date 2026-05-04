@@ -23,11 +23,11 @@ class SkillsController {
                    a.power,
                    a.sort,
                    a.update_date,
-                   b.id,
+                   b.id AS skills_type_id,
                    b.skills_type
             FROM skills AS a
                      LEFT JOIN skills_type AS b ON a.skills_type_id = b.id
-            WHERE phone_number = ${phoneNumber}
+            WHERE phone_number = ${phoneNumber} ORDER BY b.id, a.sort
         `;
         try {
             let result = await MysqlConn.sqlQuery(query);
@@ -42,7 +42,7 @@ class SkillsController {
             });
             return (ctx.body = {
                 code: ResponseCode.success,
-                data: resList,
+                data: { list: result ? result : [], obj: resList },
                 message: "查询完成",
             });
         } catch (error) {
@@ -99,7 +99,7 @@ class SkillsController {
                 SELECT COUNT(id) counts
                 FROM skills
                 WHERE name = '${name}'
-                  AND skills_type_id = ${skillsTypeId}
+                  AND skills_type_id = ${skillsTypeId} AND phone_number = ${phoneNumber} AND base_id = ${baseId}
             `;
             let [countResult] = await MysqlConn.sqlQuery(skillsTestQuery);
             if (countResult.counts > 0) {
@@ -112,14 +112,14 @@ class SkillsController {
             let skillsTypeQuery = `
                 SELECT COUNT(id) counts
                 FROM skills
-                WHERE skills_type_id = ${skillsTypeId}
+                WHERE skills_type_id = ${skillsTypeId} AND phone_number = '${phoneNumber}' AND base_id = ${baseId}
             `;
             let [countSkillsResult] = await MysqlConn.sqlQuery(skillsTypeQuery);
             if (countSkillsResult.counts >= 5) {
                 return (ctx.body = {
                     code: ResponseCode.error,
                     data: [],
-                    message: "数据添加已上限5条！",
+                    message: "同一技能类型下，数据上限5条！",
                 });
             }
             let val = `'${baseId}','${phoneNumber}','${skillsTypeId}','${name}','${power}','${sort}',NOW(),NOW()`;

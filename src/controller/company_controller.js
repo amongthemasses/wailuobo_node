@@ -4,6 +4,52 @@ const MysqlConn = require("../mysql_conn");
 const dayjs = require("dayjs");
 
 class CompanyController {
+
+
+    /**
+     * 
+     * @param {App.ParameterizedContext} ctx
+     * @returns {Promise<{code:Number,data:Object<any>,message:String} |{code:Number,error:Error,message:String} >} 
+     */
+    async getCompanyItem(ctx) {
+        let { companyId } = ctx.request.query || {};
+        if (!companyId) {
+            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'companyId'" };
+        }
+        let query = `
+            SELECT a.*,
+                   (SELECT GROUP_CONCAT(bt.id, '|,|', bt.text SEPARATOR '|.|')
+                    FROM company_text AS bt
+                    WHERE a.id = bt.company_id) AS texts,
+                   (SELECT GROUP_CONCAT(ct.id, '|,|', ct.main_text SEPARATOR '|.|')
+                    FROM company_main AS ct
+                    WHERE a.id = ct.company_id) AS main_texts
+            FROM company AS a
+            WHERE id = ${companyId}
+        `;
+        try {
+            let [result] = await MysqlConn.sqlQuery(query);
+            if (result.texts) {
+                result.texts = result.texts.split("|.|").map(it => {
+                    let [key, val] = it.split("|,|")
+                    return { text_id: Number(key), text: val };
+                })
+            } else {
+                result.texts = [];
+            }
+            if (result.main_texts) {
+                result.main_texts = result.main_texts.split("|.|").map(it => {
+                    let [key, val] = it.split("|,|")
+                    return { main_text_id: Number(key), main_text: val };
+                })
+            } else {
+                result.main_texts = [];
+            }
+            return ctx.body = { code: ResponseCode.success, data: result ? result : {}, messgae: "获取成功！" };
+        } catch (error) {
+            return ctx.body = { code: ResponseCode.error, error, messgae: error.message };
+        }
+    }
     /**
      *
      * @param {App.ParameterizedContext} ctx
@@ -32,7 +78,7 @@ class CompanyController {
         try {
             let result = await MysqlConn.sqlQuery(query);
             let reList = result.map((item, i) => {
-                if (String(item.texts).trim()) {
+                if (item.texts) {
                     let __texts = String(item.texts).trim().split("|.|");
                     item.texts = __texts.map((it, k) => {
                         let [key, val] = String(it).split("|,|");
@@ -45,7 +91,7 @@ class CompanyController {
                     let __main_texts = String(item.main_texts).trim().split("|.|");
                     item.main_texts = __main_texts.map((it, k) => {
                         let [key, val] = String(it).split("|,|");
-                        return { main_text_id: key, text: val };
+                        return { main_text_id: key, main_text: val };
                     });
                 } else {
                     item.main_texts = [];
@@ -164,6 +210,7 @@ class CompanyController {
                 await MysqlConn.connQuery(conn, textsQuery);
             }
             conn.commit();
+            conn.release();
             return (ctx.body = {
                 code: ResponseCode.success,
                 data: { insertId },
@@ -290,6 +337,7 @@ class CompanyController {
             await MysqlConn.connQuery(conn, textQuery);
             await MysqlConn.connQuery(conn, tMainQuery);
             conn.commit();
+            conn.release();
             return (ctx.body = {
                 code: ResponseCode.success,
                 data: {},

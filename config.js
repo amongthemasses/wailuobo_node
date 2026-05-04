@@ -2,6 +2,7 @@ const path = require("path");
 
 module.exports = {
     port: 8000,
+    host: "0.0.0.0",
     static: path.join(__dirname, "/public"),
     uploadsDir: path.join(__dirname, '/public/uploads'),
     responseCode: {

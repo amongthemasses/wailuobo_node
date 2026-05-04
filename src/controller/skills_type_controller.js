@@ -15,9 +15,9 @@ class SkillsTypeController {
         `;
         try {
             let result = await MysqlConn.sqlQuery(query);
-            return ctx.body = {code: ResponseCode.success, data: result, message: "获取成功！"};
+            return ctx.body = { code: ResponseCode.success, data: result, message: "获取成功！" };
         } catch (error) {
-            return ctx.bdoy = {code: ResponseCode.error, message: error.message, error};
+            return ctx.bdoy = { code: ResponseCode.error, message: error.message, error };
         }
     }
 }

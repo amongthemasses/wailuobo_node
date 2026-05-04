@@ -2,7 +2,7 @@ const ResponseCode = require("../../config").responseCode;
 const MysqlConn = require("../mysql_conn");
 
 //  模块验证白名单
-const ModuleWhiteMenu = ["show","uploads","images"];
+const ModuleWhiteMenu = ["show", "uploads", "images"];
 
 class AipAuthMiddleware {
     /**
@@ -18,7 +18,7 @@ class AipAuthMiddleware {
         if (UrlNotSetCode) { // 不需要验证
             await next();
         } else { // 需要验证
-            let {setcode, phonenumber} = ctx.request.header || {};
+            let { setcode, phonenumber } = ctx.request.header || {};
             let props = (setcode !== undefined && phonenumber !== undefined);
             // 有时间这里 加redis缓存， 优化mysql访问量
             if (props) {
@@ -32,10 +32,10 @@ class AipAuthMiddleware {
                 if (result.length > 0) {
                     await next()
                 } else {
-                    return ctx.body = {code: ResponseCode.error, message: "嘿 bro！ 你的信息验证不通过！请规范使用"};
+                    return ctx.body = { code: ResponseCode.invalidAccessToken, message: "嘿 bro！ 你的信息验证不通过！请规范使用" };
                 }
             } else {
-                return ctx.body = {code: ResponseCode.error, message: "客户端没有访问权限"};
+                return ctx.body = { code: ResponseCode.invalidAccessToken, message: "客户端没有访问权限" };
             }
         }
     }

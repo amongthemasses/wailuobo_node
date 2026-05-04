@@ -22,7 +22,7 @@ app.use(Cors({
 
 // -- body 解析 --
 const dir = Config.uploadsDir;
-!fs.existsSync(dir) && fs.mkdirSync(dir, {recursive: true});
+!fs.existsSync(dir) && fs.mkdirSync(dir, { recursive: true });
 app.use(KoaBody({
     multipart: true, // 允许上传文件
     formidable: {
@@ -30,9 +30,9 @@ app.use(KoaBody({
         maxFileSize: 10 * 1024 * 1024, // 最大 10MB
         onFileBegin: (name, file) => {
             const ext = path.extname(file.originalFilename);
-            const newFileName = Date.now() + ext;
-            file.__path = `${dir}/${newFileName}`;
-            file.__name = newFileName;
+            const __name = Date.now() + ext;
+            file.__path = `${dir}/${__name}`;
+            file.__name = __name;
         },
     }
 }))
@@ -48,5 +48,5 @@ app.use(router.routes(), router.allowedMethods({}));
 app.use(KoaStatic(Config.static));
 
 app.listen(Config.port, () => {
-    console.log(`服务器地址：http://localhost:${Config.port}`)
+    console.log(`服务器地址：http://${Config.host}:${Config.port}`)
 });
