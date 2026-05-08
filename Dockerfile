@@ -1,10 +1,10 @@
 FROM node:22.22.2
 
-WORKDIR /wailuobo_node
+WORKDIR /wailuobo
 
-COPY ./* ./
+COPY . .
 
-RUN chmod -R 777 /wailuobo_node
+RUN chmod -R 777 /wailuobo
 
 RUN npm install --registry=https://registry.npmmirror.com
 
