@@ -33,11 +33,11 @@ class SkillsController {
             let result = await MysqlConn.sqlQuery(query);
             let resList = {};
             result.forEach((item, index) => {
-                if (resList[item.id]) {
-                    resList[item.id].push(item);
+                if (resList[item.skills_type_id]) {
+                    resList[item.skills_type_id].push(item);
                 } else {
-                    resList[item.id] = [];
-                    resList[item.id].push(item);
+                    resList[item.skills_type_id] = [];
+                    resList[item.skills_type_id].push(item);
                 }
             });
             return (ctx.body = {

@@ -28,9 +28,9 @@ class AipAuthMiddleware {
                     WHERE phone_number = ${phonenumber}
                       AND set_code = ${setcode}
                 `;
-                let result = await MysqlConn.sqlQuery(query);
-                if (result.length > 0) {
-                    await next()
+                let [result] = await MysqlConn.sqlQuery(query);
+                if (result.id > 0) {
+                    await next();
                 } else {
                     return ctx.body = { code: ResponseCode.invalidAccessToken, message: "嘿 bro！ 你的信息验证不通过！请规范使用" };
                 }

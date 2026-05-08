@@ -73,7 +73,7 @@ class CompanyController {
                     WHERE a.id = ct.company_id) AS main_texts
             FROM company AS a
             WHERE a.phone_number = '${phoneNumber}'
-            ORDER BY a.start_date ASC
+            ORDER BY a.start_date DESC
         `;
         try {
             let result = await MysqlConn.sqlQuery(query);
@@ -198,6 +198,7 @@ class CompanyController {
                 INSERT INTO company_text (company_id, text)
                 VALUES ${__texts.join(",")}
             `;
+
             await MysqlConn.connQuery(conn, textsQuery);
             if (mainTexts.length > 0) {
                 let __mtTexts = mainTexts.map((t, i) => {
@@ -207,7 +208,7 @@ class CompanyController {
                     INSERT INTO company_main (company_id, main_text)
                     VALUES ${__mtTexts.join(",")}
                 `;
-                await MysqlConn.connQuery(conn, textsQuery);
+                await MysqlConn.connQuery(conn, mTextsQuery);
             }
             conn.commit();
             conn.release();

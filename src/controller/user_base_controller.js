@@ -34,7 +34,7 @@ class UserBaseController {
             if (Number(res.is_true)) {
                 return ctx.body = { code: responseCode.success, data: {}, message: "验证通过" };
             } else {
-                return ctx.body = { code: responseCode.invalidAccessToken, data: {}, message: "编码不正确，请核实手机号与编码是否匹配！Go❤️Home" };
+                return ctx.body = { code: responseCode.missingParameter, data: {}, message: "编码不正确，请核实手机号与编码是否匹配！" };
             }
         } catch (error) {
             return ctx.body = { code: responseCode.error, error, message: error.message };
@@ -72,6 +72,7 @@ class UserBaseController {
             });
         }
         let query = `SELECT id,
+                            set_code,
                             first_name,
                             show_title,
                             img_url,
@@ -291,7 +292,11 @@ class UserBaseController {
             `;
             let dataList = await MysqlConn.connQuery(conn, dListQuery);
             if (dataList[0].img_url !== "/images/default.png") {
-                fs.unlinkSync(path.join(staticDir, dataList[0].img_url));
+                try {
+                    fs.unlinkSync(path.join(staticDir, dataList[0].img_url));
+                } catch (error) {
+                    console.error(error);
+                }
             }
             let reSavePath = `/images/${file.newFilename}`;
             fs.cpSync(
