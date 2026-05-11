@@ -76,7 +76,7 @@ class ProjectController {
                     FROM project_text AS ct
                     WHERE a.id = ct.project_id) AS texts
             FROM project AS a
-            WHERE a.phone_number = '${phoneNumber}'
+            WHERE a.phone_number = '${phoneNumber}' ORDER BY a.create_date ASC
         `;
         try {
             let proList = await MysqlConn.sqlQuery(query);
