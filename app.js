@@ -45,7 +45,9 @@ app.use(AipAuthMiddleware.middleware);
 app.use(router.routes(), router.allowedMethods({}));
 
 // -- 静态资源 --
-app.use(KoaStatic(Config.static));
+app.use(KoaStatic(Config.static,{
+     maxage: 604800000 // 7天 * 24小时 * 60分 * 60秒 * 1000毫秒
+}));
 
 app.listen(Config.port, () => {
     console.log(`服务器地址：http://${Config.host}:${Config.port}`)
