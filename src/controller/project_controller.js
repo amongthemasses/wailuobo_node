@@ -3,7 +3,7 @@ const MysqlConn = require("../mysql_conn");
 const path = require("node:path");
 const fs = require("fs");
 
-const { uploadsDir, responseCode } = require("../../config");
+const {uploadsDir, responseCode} = require("../../config");
 const ResponseCode = require("../../config").responseCode;
 const staticDir = require("../../config").static;
 
@@ -11,14 +11,14 @@ class ProjectController {
 
 
     /**
-     * 
-     * @param {App.ParameterizedContext} ctx 
+     *
+     * @param {App.ParameterizedContext} ctx
      * @returns {Promise<{code:Number,message:String,data:Object}|{code:Number,message:String,error:Error}>}
      */
     async getProjectItem(ctx) {
-        let { projectId } = ctx.request.query || {};
+        let {projectId} = ctx.request.query || {};
         if (!projectId) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'projectId'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'projectId'"};
         }
         let query = `
             SELECT a.*,
@@ -37,7 +37,7 @@ class ProjectController {
                 if (result.tips) {
                     result.tips = result.tips.split("|.|").map((it, i) => {
                         let [key, val] = String(it).split("|,|");
-                        return { tip_id: Number(key), tip: val };
+                        return {tip_id: Number(key), tip: val};
                     });
                 } else {
                     result.tips = [];
@@ -45,15 +45,16 @@ class ProjectController {
                 if (result.texts) {
                     result.texts = result.texts.split("|.|").map((it, i) => {
                         let [key, val] = String(it).split("|,|");
-                        return { text_id: Number(key), text: val };
+                        return {text_id: Number(key), text: val};
                     })
                 } else {
                     result.texts = [];
                 }
-            };
-            return ctx.body = { code: ResponseCode.success, data: result ? result : {}, message: "获取成功" };
+            }
+            ;
+            return ctx.body = {code: ResponseCode.success, data: result ? result : {}, message: "获取成功"};
         } catch (error) {
-            return ctx.body = { code: ResponseCode.error, error, message: error.message };
+            return ctx.body = {code: ResponseCode.error, error, message: error.message};
         }
     }
 
@@ -63,9 +64,9 @@ class ProjectController {
      * @returns {Promise<{code: number, message: *, error: *}|{code: number, data: {}, message: string}>}
      */
     async getProjects(ctx) {
-        let { phoneNumber } = ctx.request.query || {};
+        let {phoneNumber} = ctx.request.query || {};
         if (!phoneNumber || (typeof phoneNumber != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'"};
         }
         let query = `
             SELECT a.*,
@@ -76,7 +77,8 @@ class ProjectController {
                     FROM project_text AS ct
                     WHERE a.id = ct.project_id) AS texts
             FROM project AS a
-            WHERE a.phone_number = '${phoneNumber}' ORDER BY a.create_date ASC
+            WHERE a.phone_number = '${phoneNumber}'
+            ORDER BY a.create_date ASC
         `;
         try {
             let proList = await MysqlConn.sqlQuery(query);
@@ -86,7 +88,7 @@ class ProjectController {
                     let __tips = String(it.tips).trim().split('|.|');
                     it.tips = __tips.map((v, i) => {
                         let [key, val] = String(v).split("|,|");
-                        return { tip_id: Number(key), tip: val };
+                        return {tip_id: Number(key), tip: val};
                     });
                 } else {
                     it.tips = [];
@@ -95,16 +97,16 @@ class ProjectController {
                     let __texts = String(it.texts).trim().split('|.|');
                     it.texts = __texts.map((v, i) => {
                         let [key, val] = String(v).split("|,|");
-                        return { text_id: Number(key), text: val };
+                        return {text_id: Number(key), text: val};
                     });
                 } else {
                     it.texts = [];
                 }
                 return it;
             });
-            return ctx.body = { code: ResponseCode.success, data: reList, message: "获取成功！" };
+            return ctx.body = {code: ResponseCode.success, data: reList, message: "获取成功！"};
         } catch (error) {
-            return ctx.body = { code: ResponseCode.error, message: error.message, error };
+            return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
 
@@ -114,27 +116,27 @@ class ProjectController {
      * @returns {Promise<{code: number, message: *, error: *}|{code: number, data: {}, message: string}>}
      */
     async addProject(ctx) {
-        let { baseId, phoneNumber, name, description, imgUrl, texts, tips } = ctx.request.body || {};
+        let {baseId, phoneNumber, name, description, imgUrl, texts, tips} = ctx.request.body || {};
         if (!baseId || (typeof baseId != "number")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'baseId'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'baseId'"};
         }
         if (!phoneNumber || (typeof phoneNumber != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'"};
         }
         if (!name || (typeof name != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'name'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'name'"};
         }
         if (!description || (typeof description != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'description'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'description'"};
         }
         if (!imgUrl || (typeof imgUrl != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'imgUrl'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'imgUrl'"};
         }
         if (!texts || texts.length === 0) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'texts'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'texts'"};
         }
         if (!tips || tips.length === 0) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'tips'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'tips'"};
         }
         let [sp, uploadsDir, filename] = imgUrl.trim().split("/");
         let conn = await MysqlConn.getConn();
@@ -172,10 +174,10 @@ class ProjectController {
             await MysqlConn.connQuery(conn, tipQuery);
             conn.commit();
             conn.release();
-            return ctx.body = { code: ResponseCode.success, data: {}, message: "添加成功！" };
+            return ctx.body = {code: ResponseCode.success, data: {}, message: "添加成功！"};
         } catch (error) {
             // await conn.rollback();
-            return ctx.body = { code: ResponseCode.error, message: error.message, error };
+            return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
 
@@ -187,14 +189,18 @@ class ProjectController {
     async uploadProjectImage(ctx) {
         let files = ctx.request.files;
         if (!files) {
-            return ctx.body = { code: responseCode.missingFile, message: "missing parameter 'file'" };
+            return ctx.body = {code: responseCode.missingFile, message: "missing parameter 'file'"};
         }
         let file = files.file;
         let netFilepath = `/uploads/${file.newFilename}`;
         try {
-            return ctx.body = { code: ResponseCode.success, data: { imageUrl: netFilepath }, message: "图片以上传至服务器" };
+            return ctx.body = {
+                code: ResponseCode.success,
+                data: {imageUrl: netFilepath},
+                message: "图片以上传至服务器"
+            };
         } catch (error) {
-            return ctx.body = { code: ResponseCode.error, message: error.message, error };
+            return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
 
@@ -204,24 +210,24 @@ class ProjectController {
      * @returns {Promise<{code: number, message: *, error: *}|{code: number, data: {}, message: string}>}
      */
     async updateProject(ctx) {
-        let { id, baseId, phoneNumber, name, description, imgUrl } = ctx.request.body || {};
+        let {id, baseId, phoneNumber, name, description, imgUrl} = ctx.request.body || {};
         if (!id || (typeof id != "number")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'id'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
         }
         if (!baseId || (typeof baseId != "number")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'baseId'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'baseId'"};
         }
         if (!phoneNumber || (typeof phoneNumber != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'phoneNumber'"};
         }
         if (!name || (typeof name != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'name'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'name'"};
         }
         if (!description || (typeof description != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'description'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'description'"};
         }
         if (!imgUrl || (typeof imgUrl != "string")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'imgUrl'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'imgUrl'"};
         }
         let conn = await MysqlConn.getConn()
         try {
@@ -233,7 +239,7 @@ class ProjectController {
                 WHERE img_url = '${imgUrl}'
                   AND id = ${id}
             `);
-            let rDF = { img_url: "" };
+            let rDF = {img_url: ""};
             if (resCount.counts > 0) {
                 query = `
                     UPDATE project
@@ -271,10 +277,10 @@ class ProjectController {
             }
             conn.commit();
             conn.release();
-            return ctx.body = { code: ResponseCode.success, data: {}, message: "修改成功！" };
+            return ctx.body = {code: ResponseCode.success, data: {}, message: "修改成功！"};
         } catch (error) {
             await conn.rollback();
-            return ctx.body = { code: ResponseCode.error, message: error.message, error };
+            return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
 
@@ -284,9 +290,9 @@ class ProjectController {
      * @returns {Promise<{code: number, message: *, error: *}|{code: number, data: {}, message: string}>}
      */
     async deleteProjects(ctx) {
-        let { id } = ctx.request.body || {};
+        let {id} = ctx.request.body || {};
         if (!id || (typeof id != "number")) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'id'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'id'"};
         }
         let query = `
             DELETE
@@ -311,18 +317,18 @@ class ProjectController {
                 FROM project
                 WHERE id = ${id}
             `);
-            await MysqlConn.connQuery(conn, query);
             await MysqlConn.connQuery(conn, tipQuery);
             await MysqlConn.connQuery(conn, textQuery);
+            await MysqlConn.connQuery(conn, query);
             if (rfd.length > 0) {
                 fs.unlinkSync(path.join(staticDir, rfd[0].img_url));
             }
             conn.commit();
             conn.release();
-            return ctx.body = { code: ResponseCode.success, data: {}, message: "删除成功！" };
+            return ctx.body = {code: ResponseCode.success, data: {}, message: "删除成功！"};
         } catch (error) {
             await conn.rollback();
-            return ctx.body = { code: ResponseCode.error, message: error.message, error };
+            return ctx.body = {code: ResponseCode.error, message: error.message, error};
         }
     }
 }

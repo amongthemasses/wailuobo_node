@@ -11,7 +11,7 @@
  Target Server Version : 80408 (8.4.8)
  File Encoding         : 65001
 
- Date: 08/05/2026 17:57:02
+ Date: 20/05/2026 11:49:28
 */
 
 SET NAMES utf8mb4;
@@ -32,13 +32,18 @@ CREATE TABLE `company` (
   `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `update_date` datetime NOT NULL,
   `create_date` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_bid_pnum` (`base_id`,`phone_number`) USING BTREE,
+  KEY `index_bid` (`base_id`) USING BTREE,
+  KEY `index_pnum` (`phone_number`) USING BTREE,
+  CONSTRAINT `base_id_cp` FOREIGN KEY (`base_id`) REFERENCES `user_base` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of company
 -- ----------------------------
 BEGIN;
+INSERT INTO `company` (`id`, `base_id`, `phone_number`, `post`, `company`, `start_date`, `end_date`, `address`, `update_date`, `create_date`) VALUES (1, 1, '19238057615', 'ads', 'asdf', '2026-01-20 11:44:19', '2026-06-20 11:44:19', 'asdf', '2026-05-20 03:44:27', '2026-05-20 03:44:27');
 COMMIT;
 
 -- ----------------------------
@@ -49,13 +54,18 @@ CREATE TABLE `company_main` (
   `id` int NOT NULL AUTO_INCREMENT,
   `company_id` int NOT NULL,
   `main_text` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_id_cid` (`id`,`company_id`) USING BTREE,
+  KEY `index_cid` (`company_id`),
+  CONSTRAINT `cp_man` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of company_main
 -- ----------------------------
 BEGIN;
+INSERT INTO `company_main` (`id`, `company_id`, `main_text`) VALUES (1, 1, 'asdf');
+INSERT INTO `company_main` (`id`, `company_id`, `main_text`) VALUES (2, 1, 'asdf');
 COMMIT;
 
 -- ----------------------------
@@ -66,13 +76,18 @@ CREATE TABLE `company_text` (
   `id` int NOT NULL AUTO_INCREMENT,
   `company_id` int NOT NULL,
   `text` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_id` (`id`,`company_id`) USING BTREE,
+  KEY `index_cid` (`company_id`),
+  CONSTRAINT `cp_text` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of company_text
 -- ----------------------------
 BEGIN;
+INSERT INTO `company_text` (`id`, `company_id`, `text`) VALUES (1, 1, 'asdf');
+INSERT INTO `company_text` (`id`, `company_id`, `text`) VALUES (2, 1, 'asdf');
 COMMIT;
 
 -- ----------------------------
@@ -88,8 +103,12 @@ CREATE TABLE `project` (
   `img_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `create_date` datetime NOT NULL,
   `update_date` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_id_pnum` (`base_id`,`phone_number`),
+  KEY `index_bid` (`base_id`),
+  KEY `index_pnum` (`phone_number`),
+  CONSTRAINT `base_id_pro` FOREIGN KEY (`base_id`) REFERENCES `user_base` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of project
@@ -105,8 +124,11 @@ CREATE TABLE `project_text` (
   `id` int NOT NULL AUTO_INCREMENT,
   `project_id` int NOT NULL,
   `text` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_id_pid` (`id`,`project_id`) USING BTREE,
+  KEY `index_pid` (`project_id`),
+  CONSTRAINT `pro_text` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of project_text
@@ -122,8 +144,11 @@ CREATE TABLE `project_tips` (
   `id` int NOT NULL AUTO_INCREMENT,
   `project_id` int NOT NULL,
   `tip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `index_id_pid` (`id`,`project_id`),
+  KEY `index_pid` (`project_id`),
+  CONSTRAINT `pro_tips` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of project_tips
@@ -146,8 +171,14 @@ CREATE TABLE `skills` (
   `create_date` datetime NOT NULL,
   `update_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `sk_ty` (`skills_type_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `index_name` (`name`) USING BTREE,
+  KEY `index_id_pnum` (`base_id`,`phone_number`) USING BTREE,
+  KEY `index_id` (`base_id`),
+  KEY `index_pnum` (`phone_number`) USING BTREE,
+  KEY `type_sk` (`skills_type_id`),
+  CONSTRAINT `base_id_sk` FOREIGN KEY (`base_id`) REFERENCES `user_base` (`id`),
+  CONSTRAINT `type_sk` FOREIGN KEY (`skills_type_id`) REFERENCES `skills_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of skills
@@ -194,13 +225,18 @@ CREATE TABLE `user_base` (
   `net_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `update_date` datetime NOT NULL,
   `create_date` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`,`phone_number`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户基础表';
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `index_pnum` (`phone_number`),
+  UNIQUE KEY `index_pnum_code` (`phone_number`,`set_code`),
+  KEY `index_id_pnum` (`id`,`phone_number`) USING BTREE,
+  KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户基础表';
 
 -- ----------------------------
 -- Records of user_base
 -- ----------------------------
 BEGIN;
+INSERT INTO `user_base` (`id`, `first_name`, `show_title`, `img_url`, `user_tip`, `phone_number`, `email`, `address`, `weixin`, `set_code`, `github`, `net_address`, `update_date`, `create_date`) VALUES (1, '菜萝卜', '这是一条初始的个人自我描述的信息记得修改哦！', '/images/default.png', '软件开发工程师', '19238057615', '这是初始邮箱信息@163.com', '中国-北海', '这是你的微信号', '158092', 'https://github.com/你的仓库地址', 'http://localhost:8000', '2026-05-20 03:43:36', '2026-05-20 03:43:36');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

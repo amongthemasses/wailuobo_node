@@ -123,7 +123,7 @@ class UserBaseController {
         let firstName = "菜萝卜";
         let showTitle = "这是一条初始的个人自我描述的信息记得修改哦！";
         let imgUrl = "/images/default.png";
-        let userTip = "Nodejs前端开发工程师";
+        let userTip = "软件开发工程师";
         let email = "这是初始邮箱信息@163.com";
         let address = "中国-北海";
         let weixin = "这是你的微信号";

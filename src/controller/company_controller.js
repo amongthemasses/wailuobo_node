@@ -7,14 +7,14 @@ class CompanyController {
 
 
     /**
-     * 
+     *
      * @param {App.ParameterizedContext} ctx
-     * @returns {Promise<{code:Number,data:Object<any>,message:String} |{code:Number,error:Error,message:String} >} 
+     * @returns {Promise<{code:Number,data:Object<any>,message:String} |{code:Number,error:Error,message:String} >}
      */
     async getCompanyItem(ctx) {
-        let { companyId } = ctx.request.query || {};
+        let {companyId} = ctx.request.query || {};
         if (!companyId) {
-            return ctx.body = { code: ResponseCode.missingParameter, message: "missing parameter 'companyId'" };
+            return ctx.body = {code: ResponseCode.missingParameter, message: "missing parameter 'companyId'"};
         }
         let query = `
             SELECT a.*,
@@ -32,7 +32,7 @@ class CompanyController {
             if (result.texts) {
                 result.texts = result.texts.split("|.|").map(it => {
                     let [key, val] = it.split("|,|")
-                    return { text_id: Number(key), text: val };
+                    return {text_id: Number(key), text: val};
                 })
             } else {
                 result.texts = [];
@@ -40,23 +40,24 @@ class CompanyController {
             if (result.main_texts) {
                 result.main_texts = result.main_texts.split("|.|").map(it => {
                     let [key, val] = it.split("|,|")
-                    return { main_text_id: Number(key), main_text: val };
+                    return {main_text_id: Number(key), main_text: val};
                 })
             } else {
                 result.main_texts = [];
             }
-            return ctx.body = { code: ResponseCode.success, data: result ? result : {}, messgae: "获取成功！" };
+            return ctx.body = {code: ResponseCode.success, data: result ? result : {}, messgae: "获取成功！"};
         } catch (error) {
-            return ctx.body = { code: ResponseCode.error, error, messgae: error.message };
+            return ctx.body = {code: ResponseCode.error, error, messgae: error.message};
         }
     }
+
     /**
      *
      * @param {App.ParameterizedContext} ctx
      * @returns {Promise<{code: number, message: string}|{code: number, message: *, error: *}|{code: number, data: *, message: string}>}
      */
     async getCompany(ctx) {
-        let { phoneNumber } = ctx.request.query || {};
+        let {phoneNumber} = ctx.request.query || {};
         if (!phoneNumber || typeof phoneNumber !== "string") {
             return (ctx.body = {
                 code: ResponseCode.missingParameter,
@@ -82,7 +83,7 @@ class CompanyController {
                     let __texts = String(item.texts).trim().split("|.|");
                     item.texts = __texts.map((it, k) => {
                         let [key, val] = String(it).split("|,|");
-                        return { text_id: key, text: val };
+                        return {text_id: key, text: val};
                     });
                 } else {
                     item.texts = [];
@@ -91,7 +92,7 @@ class CompanyController {
                     let __main_texts = String(item.main_texts).trim().split("|.|");
                     item.main_texts = __main_texts.map((it, k) => {
                         let [key, val] = String(it).split("|,|");
-                        return { main_text_id: key, main_text: val };
+                        return {main_text_id: key, main_text: val};
                     });
                 } else {
                     item.main_texts = [];
@@ -190,7 +191,7 @@ class CompanyController {
                         NOW(), NOW())
             `;
             await conn.beginTransaction();
-            let { insertId } = await MysqlConn.connQuery(conn, query);
+            let {insertId} = await MysqlConn.connQuery(conn, query);
             let __texts = texts.map((t, i) => {
                 return `(${insertId},'${t}')`;
             });
@@ -214,7 +215,7 @@ class CompanyController {
             conn.release();
             return (ctx.body = {
                 code: ResponseCode.success,
-                data: { insertId },
+                data: {insertId},
                 message: "创建成功！",
             });
         } catch (error) {
@@ -233,8 +234,8 @@ class CompanyController {
      * @returns {Promise<{code: number, message: string}|{code: number, message: string}|{code: number, message: string}|{code: number, message: *, error: *}|{code: number, data: {}, message: string}|{code: number, message: string}|{code: number, message: string}|{code: number, message: string}|{code: number, message: string}>}
      */
     async updateCompany(ctx) {
-        let { companyId, phoneNumber, post, company, startDate, endDate, address } =
-            ctx.request.body || {};
+        let {companyId, phoneNumber, post, company, startDate, endDate, address} =
+        ctx.request.body || {};
         if (!companyId || typeof companyId != "number") {
             return (ctx.body = {
                 code: ResponseCode.missingParameter,
@@ -309,7 +310,7 @@ class CompanyController {
      * @returns {Promise<{code: number, data: {}, message: string}|{code: number, message: string}|{code: number, message: *, error: *}>}
      */
     async deleteCompany(ctx) {
-        let { companyId } = ctx.request.body || {};
+        let {companyId} = ctx.request.body || {};
         if (!companyId || typeof companyId != "number") {
             return (ctx.body = {
                 code: ResponseCode.missingParameter,
@@ -334,9 +335,10 @@ class CompanyController {
         let conn = await MysqlConn.getConn();
         try {
             await conn.beginTransaction();
-            await MysqlConn.connQuery(conn, query);
             await MysqlConn.connQuery(conn, textQuery);
             await MysqlConn.connQuery(conn, tMainQuery);
+            await MysqlConn.connQuery(conn, query);
+
             conn.commit();
             conn.release();
             return (ctx.body = {
